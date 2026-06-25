@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  --ovp-blue-50:  #F5F8FF;
+  --ovp-blue-100: #E8F0FF;
+  --ovp-blue-500: #5B7CF6;
+  --ovp-blue:     #3D63DD;
+  --ovp-blue-dark:#2E4FB8;
+  --ovp-blue-900: #223B82;
+  
+  --ovp-green-100: #EEF8F1;
+  --ovp-green:     #5BAE73;
+  --ovp-green-dark:#468A5A;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "myriad-pro", sans-serif;
+  --font-mono: monospace;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "myriad-pro", sans-serif;
+}
