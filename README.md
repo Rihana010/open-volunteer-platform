@@ -48,6 +48,12 @@ Whether you're a nonprofit, school, community group, or company, Open Volunteer 
 * Export signup lists
 * Manage administrator accounts
 
+### Changes in This Fork
+
+- Fixed volunteer counts on the public event listings.
+- Added transaction-based capacity protection to prevent   registrations from exceeding event limits.
+- Improved handling of confirmation email failures.
+
 ---
 
 ## Built With
@@ -66,7 +72,7 @@ Whether you're a nonprofit, school, community group, or company, Open Volunteer 
 Clone the repository.
 
 ```bash
-git clone https://github.com/Symplapp/open-volunteer-platform.git
+git clone https://github.com/Rihana010/open-volunteer-platform.git
 ```
 
 Install dependencies.
@@ -130,7 +136,9 @@ to fit your own organization.
 
 ## Screenshots
 
-I'll be adding screenshots here soon.
+## Screenshots
+
+Screenshots of the public event listings and admin dashboard will be added here.
 
 ---
 
