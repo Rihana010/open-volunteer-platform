@@ -18,8 +18,27 @@ export function useEvents() {
         }
 
         const data = await response.json();
-        setEvents(data);
-      } catch {
+
+        const mappedEvents: EventItem[] = data.map(
+          (event: EventItem & {
+            signups?: {
+              id: number;
+              fullName: string;
+              locationOrDepartment: string;
+            }[];
+          }) => ({
+            ...event,
+            volunteers: (event.signups ?? []).map((signup) => ({
+              id: signup.id,
+              name: signup.fullName,
+              locationOrDepartment: signup.locationOrDepartment,
+            })),
+          })
+        );
+
+        setEvents(mappedEvents);
+      } catch (error) {
+        console.error("Failed to load events:", error);
         setError("Unable to load events.");
       } finally {
         setIsLoading(false);
