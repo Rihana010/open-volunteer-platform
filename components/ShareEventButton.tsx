@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 type ShareEvent = {
   title: string;
@@ -19,8 +19,24 @@ export function ShareEventButton({
   compact?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const baseUrl = () =>
+    (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/+$/, "");
 
-  const link = () => `${window.location.origin}/join/${event.inviteCode}`;
+  const link = () => `${baseUrl()}/join/${event.inviteCode}`;
+
+  // False on the server, real value in the browser, with no hydration mismatch.
+  const localOnly = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const host = new URL(baseUrl()).hostname;
+      return (
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        /^(10|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(host)
+      );
+    },
+    () => false
+  );
 
   function shareOnWhatsApp() {
     const text = [
@@ -28,11 +44,16 @@ export function ShareEventButton({
       `${event.date}, ${event.startTime} to ${event.endTime}`,
       event.location,
       "",
-      "Volunteers needed. Paste this link on the Open Volunteer home page, or just tap it, to sign up:",
+      "Volunteers needed. Tap the link to sign up. It only asks for your name and phone number:",
       link(),
     ].join("\n");
 
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+    // If the browser blocks the new tab, open WhatsApp in this one instead.
+    if (!window.open(url, "_blank", "noopener")) {
+      window.location.href = url;
+    }
   }
 
   async function copyLink() {
@@ -48,6 +69,7 @@ export function ShareEventButton({
   const size = compact ? "btn-sm" : "";
 
   return (
+    <div>
     <div className="flex flex-wrap gap-2">
       <button type="button" className={`btn btn-whatsapp ${size}`} onClick={shareOnWhatsApp}>
         Share on WhatsApp
@@ -55,6 +77,13 @@ export function ShareEventButton({
       <button type="button" className={`btn btn-ghost ${size}`} onClick={copyLink} aria-live="polite">
         {copied ? "Link copied" : "Copy link"}
       </button>
+    </div>
+      {localOnly && (
+        <p className="mt-2 max-w-[44ch] text-sm font-semibold text-[var(--brick)]">
+          This link only opens on this computer or network. Set
+          NEXT_PUBLIC_SITE_URL to your public address before sharing it.
+        </p>
+      )}
     </div>
   );
 }

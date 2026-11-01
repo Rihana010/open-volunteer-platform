@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/currentAdmin";
+import { eventScope } from "@/lib/adminAccess";
+import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { EventArchiveButton } from "@/components/EventArchiveButton";
 
 export const dynamic = "force-dynamic";
@@ -15,9 +18,12 @@ function formatDate(date: Date) {
 }
 
 export default async function ArchivedEventsPage() {
+  const admin = await requireAdmin();
+
   const events = await prisma.event.findMany({
     where: {
       isActive: false,
+      ...eventScope(admin),
     },
     orderBy: {
       date: "desc",
@@ -105,6 +111,11 @@ export default async function ArchivedEventsPage() {
                         <EventArchiveButton
                           eventId={event.id}
                           isActive={event.isActive}
+                        />
+                        <DeleteEventButton
+                          eventId={event.id}
+                          title={event.title}
+                          signupCount={event.signups.length}
                         />
                       </div>
                     </td>

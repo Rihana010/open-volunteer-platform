@@ -1,4 +1,4 @@
-import { getSessionEmail } from "@/lib/session";
+import { canManageEvent, getAdminFromRequest } from "@/lib/adminAccess";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
@@ -8,62 +8,21 @@ type RouteContext = {
   }>;
 };
 
-async function getCurrentAdmin(request: Request) {
-  const adminEmail = await getSessionEmail(request);
-
-  if (!adminEmail) {
-    return null;
-  }
-
-  return prisma.adminUser.findUnique({
-    where: {
-      email: decodeURIComponent(adminEmail).toLowerCase(),
-    },
-  });
+async function canManage(request: Request, eventId: number) {
+  const admin = await getAdminFromRequest(request);
+  return admin ? canManageEvent(admin, eventId) : false;
 }
 
-async function canManageEvent(request: Request, eventId: number) {
-  const adminUser = await getCurrentAdmin(request);
-
-  if (!adminUser) {
-    return false;
-  }
-
-  if (adminUser.role === "super_admin") {
-    return true;
-  }
-
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: {
-      createdByAdminId: true,
-      adminAssignments: {
-        where: {
-          adminId: adminUser.id,
-        },
-        select: {
-          id: true,
-        },
-      },
-    },
-  });
-
-  if (!event) {
-    return false;
-  }
-
-  return (
-    event.createdByAdminId === adminUser.id ||
-    event.adminAssignments.length > 0
-  );
-}
-
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { eventId } = await context.params;
   const id = Number(eventId);
 
   if (!id) {
     return NextResponse.json({ error: "Invalid event ID." }, { status: 400 });
+  }
+
+  if (!(await canManage(request, id))) {
+    return NextResponse.json({ error: "Event not found." }, { status: 404 });
   }
 
   const event = await prisma.event.findUnique({
@@ -89,7 +48,7 @@ export async function PUT(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid event ID." }, { status: 400 });
     }
 
-    const hasPermission = await canManageEvent(request, id);
+    const hasPermission = await canManage(request, id);
 
 if (!hasPermission) {
   return NextResponse.json(
@@ -102,6 +61,7 @@ if (!hasPermission) {
 
     const title = String(body.title || "").trim();
     const date = String(body.date || "").trim();
+    const endDate = String(body.endDate || "").trim();
     const startTime = String(body.startTime || "").trim();
     const endTime = String(body.endTime || "").trim();
     const location = String(body.location || "").trim();
@@ -128,6 +88,7 @@ if (!hasPermission) {
       data: {
         title,
         date: new Date(`${date}T12:00:00`),
+        endDate: endDate ? new Date(`${endDate}T12:00:00`) : null,
         startTime,
         endTime,
         location,
@@ -156,7 +117,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "Invalid event ID." }, { status: 400 });
     }
 
-    const hasPermission = await canManageEvent(request, id);
+    const hasPermission = await canManage(request, id);
 
 if (!hasPermission) {
   return NextResponse.json(
@@ -181,6 +142,39 @@ if (!hasPermission) {
 
     return NextResponse.json(
       { error: "Failed to update event status." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request, context: RouteContext) {
+  try {
+    const { eventId } = await context.params;
+    const id = Number(eventId);
+
+    if (!id) {
+      return NextResponse.json({ error: "Invalid event ID." }, { status: 400 });
+    }
+
+    if (!(await canManage(request, id))) {
+      return NextResponse.json(
+        { error: "You do not have permission to delete this event." },
+        { status: 403 }
+      );
+    }
+
+    await prisma.$transaction([
+      prisma.volunteerSignup.deleteMany({ where: { eventId: id } }),
+      prisma.eventAdminAssignment.deleteMany({ where: { eventId: id } }),
+      prisma.event.delete({ where: { id } }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to delete event:", error);
+
+    return NextResponse.json(
+      { error: "Failed to delete event." },
       { status: 500 }
     );
   }

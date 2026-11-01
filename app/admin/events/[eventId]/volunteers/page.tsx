@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/currentAdmin";
+import { eventScope } from "@/lib/adminAccess";
+import { RemoveVolunteerButton } from "@/components/RemoveVolunteerButton";
 import { ShareEventButton } from "@/components/ShareEventButton";
 
 type VolunteerPageProps = {
@@ -22,8 +25,11 @@ export default async function EventVolunteersPage({
   const { eventId } = await params;
   const id = Number(eventId);
 
-  const event = await prisma.event.findUnique({
-    where: { id },
+  const admin = await requireAdmin();
+
+  // Event admins can only open events they created or were assigned to.
+  const event = await prisma.event.findFirst({
+    where: { id, ...eventScope(admin) },
     include: {
       signups: {
         orderBy: {
@@ -37,7 +43,7 @@ export default async function EventVolunteersPage({
     return (
       <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8">
         <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          Event not found.
+          You don&apos;t have an event with that number.
         </div>
       </div>
     );
@@ -96,11 +102,11 @@ export default async function EventVolunteersPage({
             <thead className="bg-slate-100 text-slate-700">
               <tr>
                 <th className="px-4 py-3 font-semibold">Name</th>
-                <th className="px-4 py-3 font-semibold">Email</th>
-                <th className="px-4 py-3 font-semibold">Branch/Department</th>
+                <th className="px-4 py-3 font-semibold">Phone</th>
                 <th className="px-4 py-3 font-semibold">Volunteer Dates</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
                 <th className="px-4 py-3 font-semibold">Signup Date</th>
+                <th className="px-4 py-3 font-semibold">Remove</th>
               </tr>
             </thead>
 
@@ -112,11 +118,13 @@ export default async function EventVolunteersPage({
                   </td>
 
                   <td className="px-4 py-4">
-                    {signup.email || "—"}
-                  </td>
-
-                  <td className="px-4 py-4">
-                    {signup.locationOrDepartment}
+                    {signup.phone ? (
+                      <a href={`tel:${signup.phone}`} className="underline">
+                        {signup.phone}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
                   </td>
 
                   <td className="px-4 py-4">
@@ -139,6 +147,14 @@ export default async function EventVolunteersPage({
 
                   <td className="px-4 py-4">
                     {formatDate(signup.createdAt)}
+                  </td>
+
+                  <td className="px-4 py-4">
+                    <RemoveVolunteerButton
+                      eventId={event.id}
+                      signupId={signup.id}
+                      name={signup.fullName}
+                    />
                   </td>
                 </tr>
               ))}

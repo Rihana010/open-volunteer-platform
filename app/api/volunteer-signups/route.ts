@@ -1,160 +1,100 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendVolunteerConfirmationEmail } from "@/lib/email";
+
+// Every calendar day of the event, as yyyy-mm-dd. A volunteer signs up for the
+// whole event, so the server fills this in instead of asking them.
+function eventDays(start: Date, end: Date | null) {
+  const days: string[] = [];
+  const last = (end ?? start).toISOString().slice(0, 10);
+  const cursor = new Date(`${start.toISOString().slice(0, 10)}T12:00:00Z`);
+
+  while (cursor.toISOString().slice(0, 10) <= last && days.length < 366) {
+    days.push(cursor.toISOString().slice(0, 10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return days;
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
 
     const inviteCode = String(body.inviteCode || "").trim();
-    const fullName = String(body.fullName || "").trim();
-    const email = String(body.email || "").trim().toLowerCase();
-    const locationOrDepartment = String(
-      body.locationOrDepartment || ""
-    ).trim();
+    const fullName = String(body.fullName || "").trim().slice(0, 120);
 
-    const selectedDates = Array.isArray(body.selectedDates)
-      ? body.selectedDates.map(String)
-      : [];
+    // Keep a leading "+", drop spaces, dashes and brackets.
+    const phone = String(body.phone || "")
+      .trim()
+      .replace(/(?!^\+)[^\d]/g, "");
+    const phoneDigits = phone.replace(/\D/g, "");
 
-    if (!inviteCode || !fullName || !email || !locationOrDepartment) {
+    if (!inviteCode || !fullName) {
       return NextResponse.json(
-        {
-          error:
-            "Enter your name, company email, and location or department.",
-        },
+        { error: "Enter your name and phone number." },
         { status: 400 }
       );
     }
 
-    if (!email.endsWith("@weke.com")) {
+    if (phoneDigits.length < 7 || phoneDigits.length > 15) {
       return NextResponse.json(
-        { error: "Please use your company email address to volunteer." },
-        { status: 400 }
-      );
-    }
-
-    if (selectedDates.length === 0) {
-      return NextResponse.json(
-        { error: "Please select at least one volunteer date." },
-        { status: 400 }
-      );
-    }
-
-    const eventRecord = await prisma.event.findUnique({
-      where: { inviteCode },
-      select: { id: true, date: true, endDate: true },
-    });
-
-    if (!eventRecord) {
-      throw new Error("EVENT_NOT_AVAILABLE");
-    }
-
-    const eventId = eventRecord.id;
-
-    // Only accept days that actually belong to this event.
-    const allowedDates = new Set<string>();
-    const lastDay = (eventRecord.endDate ?? eventRecord.date).toISOString().slice(0, 10);
-    for (
-      let day = new Date(eventRecord.date.toISOString().slice(0, 10) + "T12:00:00Z");
-      day.toISOString().slice(0, 10) <= lastDay && allowedDates.size < 366;
-      day.setUTCDate(day.getUTCDate() + 1)
-    ) {
-      allowedDates.add(day.toISOString().slice(0, 10));
-    }
-
-    if (!selectedDates.every((date: string) => allowedDates.has(date))) {
-      return NextResponse.json(
-        { error: "One of the selected days is not part of this event." },
+        { error: "Enter a valid phone number, for example +91 98765 43210." },
         { status: 400 }
       );
     }
 
     await prisma.$transaction(async (tx) => {
-      // Lock this event row so concurrent registrations for the same
-      // event cannot pass the capacity check simultaneously.
-      const lockedEvents = await tx.$queryRaw<
-        { id: number; isActive: boolean; volunteerCapacity: number }[]
+      const found = await tx.event.findUnique({
+        where: { inviteCode },
+        select: { id: true },
+      });
+
+      if (!found) {
+        throw new Error("EVENT_NOT_AVAILABLE");
+      }
+
+      // Lock this event row so two people taking the last spot at the same
+      // moment can't both get in.
+      const locked = await tx.$queryRaw<
+        { isActive: boolean; volunteerCapacity: number }[]
       >`
-        SELECT id, "isActive", "volunteerCapacity"
+        SELECT "isActive", "volunteerCapacity"
         FROM "Event"
-        WHERE id = ${eventId}
+        WHERE id = ${found.id}
         FOR UPDATE
       `;
 
-      const lockedEvent = lockedEvents[0];
-
-      if (!lockedEvent || !lockedEvent.isActive) {
+      if (!locked[0] || !locked[0].isActive) {
         throw new Error("EVENT_NOT_AVAILABLE");
       }
 
-      const event = await tx.event.findUnique({
-        where: { id: eventId },
-        include: { signups: true },
+      const event = await tx.event.findUniqueOrThrow({
+        where: { id: found.id },
+        include: { signups: { select: { phone: true } } },
       });
 
-      if (!event) {
-        throw new Error("EVENT_NOT_AVAILABLE");
-      }
-
-      if (event.signups.length >= lockedEvent.volunteerCapacity) {
+      if (event.signups.length >= locked[0].volunteerCapacity) {
         throw new Error("EVENT_FULL");
       }
 
-      const duplicateSignup = event.signups.find((existingSignup) => {
-        const sameEmail = existingSignup.email?.toLowerCase() === email;
+      const alreadySignedUp = event.signups.some(
+        (existing) => existing.phone?.replace(/\D/g, "") === phoneDigits
+      );
 
-        const sameNameAndDepartment =
-          existingSignup.fullName.toLowerCase() === fullName.toLowerCase() &&
-          existingSignup.locationOrDepartment.toLowerCase() ===
-            locationOrDepartment.toLowerCase();
-
-        return sameEmail || sameNameAndDepartment;
-      });
-
-      if (duplicateSignup) {
+      if (alreadySignedUp) {
         throw new Error("DUPLICATE_SIGNUP");
       }
 
-      return tx.volunteerSignup.create({
+      await tx.volunteerSignup.create({
         data: {
-          eventId,
+          eventId: event.id,
           fullName,
-          email,
-          locationOrDepartment,
-          selectedDates,
+          phone,
+          selectedDates: eventDays(event.date, event.endDate),
           status: "confirmed",
         },
       });
     });
-
-    // Send email only after the database transaction commits.
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-      select: {
-        title: true,
-        date: true,
-        startTime: true,
-        endTime: true,
-        location: true,
-      },
-    });
-
-    if (event) {
-      try {
-        await sendVolunteerConfirmationEmail({
-          to: email,
-          fullName,
-          eventTitle: event.title,
-          eventDate: event.date,
-          startTime: event.startTime,
-          endTime: event.endTime,
-          location: event.location,
-        });
-      } catch (emailError) {
-        console.error("Failed to send volunteer confirmation email:", emailError);
-      }
-    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
@@ -165,16 +105,14 @@ export async function POST(request: Request) {
             { error: "This event is not available." },
             { status: 404 }
           );
-
         case "EVENT_FULL":
           return NextResponse.json(
-            { error: "This event is currently full for volunteers." },
+            { error: "Every spot for this event is taken." },
             { status: 409 }
           );
-
         case "DUPLICATE_SIGNUP":
           return NextResponse.json(
-            { error: "You are already registered for this event." },
+            { error: "This phone number is already signed up for this event." },
             { status: 409 }
           );
       }
@@ -183,7 +121,7 @@ export async function POST(request: Request) {
     console.error("Failed to create volunteer signup:", error);
 
     return NextResponse.json(
-      { error: "Failed to submit volunteer request." },
+      { error: "Couldn't save your sign-up. Try again." },
       { status: 500 }
     );
   }

@@ -1,4 +1,5 @@
-import { getSessionEmailFromToken, SESSION_COOKIE } from "@/lib/session";
+import { getSessionEmailFromToken } from "@/lib/adminAccess";
+import { SESSION_COOKIE } from "@/lib/session";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";

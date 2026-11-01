@@ -1,5 +1,5 @@
 import { randomInt } from "crypto";
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail } from "@/lib/adminAccess";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
@@ -53,9 +53,9 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!email.endsWith("@weke.com")) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return NextResponse.json(
-      { error: "Admin email must be a company email address." },
+      { error: "Enter a valid email address." },
       { status: 400 }
     );
   }

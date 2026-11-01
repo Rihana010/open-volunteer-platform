@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/currentAdmin";
+import { eventScope } from "@/lib/adminAccess";
 import { ShareEventButton } from "@/components/ShareEventButton";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +15,14 @@ function shortDate(date: Date) {
 }
 
 export default async function AdminDashboard() {
+  const admin = await requireAdmin();
+  const scope = eventScope(admin);
+
   const [archivedEvents, totalSignups, upcoming] = await Promise.all([
-    prisma.event.count({ where: { isActive: false } }),
-    prisma.volunteerSignup.count(),
+    prisma.event.count({ where: { isActive: false, ...scope } }),
+    prisma.volunteerSignup.count({ where: { event: scope } }),
     prisma.event.findMany({
-      where: { isActive: true, date: { gte: new Date() } },
+      where: { isActive: true, date: { gte: new Date() }, ...scope },
       orderBy: { date: "asc" },
       take: 6,
       include: { _count: { select: { signups: true } } },

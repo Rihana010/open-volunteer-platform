@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { locationOrDepartmentOptions } from "@/lib/locations";
 
 export type JoinEvent = {
   inviteCode: string;
@@ -47,11 +46,7 @@ export function JoinForm({ event }: { event: JoinEvent }) {
   const start = parseDay(event.date);
 
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [department, setDepartment] = useState("");
-  const [selectedDays, setSelectedDays] = useState<string[]>(
-    days.length === 1 ? days : []
-  );
+  const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -68,11 +63,6 @@ export function JoinForm({ event }: { event: JoinEvent }) {
     submitEvent.preventDefault();
     setError("");
 
-    if (selectedDays.length === 0) {
-      setError("Pick at least one day you can come.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
@@ -82,9 +72,7 @@ export function JoinForm({ event }: { event: JoinEvent }) {
         body: JSON.stringify({
           inviteCode: event.inviteCode,
           fullName,
-          email,
-          locationOrDepartment: department,
-          selectedDates: selectedDays,
+          phone,
         }),
       });
 
@@ -165,11 +153,9 @@ export function JoinForm({ event }: { event: JoinEvent }) {
           <div role="status">
             <span className="stamp stamp-in">You&apos;re in</span>
             <p className="mt-5 text-lg">
-              Thanks, {fullName.trim().split(" ")[0]}. Your spot is saved for{" "}
-              {selectedDays.length === 1
-                ? dayLabel(selectedDays[0])
-                : selectedDays.map(dayLabel).join(", ")}
-              . Arrive at {event.startTime} at {event.location}.
+              Thanks, {fullName.trim().split(" ")[0]}. Your spot is saved.
+              Arrive at {event.startTime} at {event.location}
+              {days.length > 1 ? `, from ${dayLabel(days[0])} to ${dayLabel(days[days.length - 1])}` : ""}.
             </p>
             <ContactLine contacts={event.contacts} />
           </div>
@@ -186,7 +172,7 @@ export function JoinForm({ event }: { event: JoinEvent }) {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <label className="field">
-                <span>Full name</span>
+                <span>Your name</span>
                 <input
                   className="input"
                   value={fullName}
@@ -197,60 +183,20 @@ export function JoinForm({ event }: { event: JoinEvent }) {
               </label>
 
               <label className="field">
-                <span>Company email</span>
+                <span>Phone number</span>
                 <input
-                  type="email"
+                  type="tel"
                   className="input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  inputMode="email"
-                  placeholder="name@weke.com"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  autoComplete="tel"
+                  inputMode="tel"
+                  placeholder="+91 98765 43210"
                   required
                 />
+                <small>The organizer may message you here about this event.</small>
               </label>
             </div>
-
-            <label className="field">
-              <span>Your department or office</span>
-              <select
-                className="input"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                required
-              >
-                <option value="">Choose one</option>
-                {locationOrDepartmentOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {days.length > 1 && (
-              <fieldset>
-                <legend className="mb-2 font-bold">Which days can you come?</legend>
-                <div className="flex flex-wrap gap-2">
-                  {days.map((day) => (
-                    <label key={day} className="chip relative">
-                      <input
-                        type="checkbox"
-                        checked={selectedDays.includes(day)}
-                        onChange={(e) =>
-                          setSelectedDays((current) =>
-                            e.target.checked
-                              ? [...current, day].sort()
-                              : current.filter((d) => d !== day)
-                          )
-                        }
-                      />
-                      {dayLabel(day)}
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            )}
 
             {error && (
               <p className="notice" role="alert">

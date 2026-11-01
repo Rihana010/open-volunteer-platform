@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { Wordmark } from "@/components/Wordmark";
 import { AdminLogoutButton } from "@/components/AdminLogoutButton";
-import { getSessionEmailFromToken, SESSION_COOKIE } from "@/lib/session";
+import { getSessionEmailFromToken } from "@/lib/adminAccess";
+import { SESSION_COOKIE } from "@/lib/session";
 
 export default async function AdminLayout({
   children,

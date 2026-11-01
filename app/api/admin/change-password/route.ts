@@ -1,4 +1,4 @@
-import { getSessionEmail } from "@/lib/session";
+import { getSessionEmail } from "@/lib/adminAccess";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";

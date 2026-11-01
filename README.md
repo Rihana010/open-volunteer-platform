@@ -177,7 +177,10 @@ If you end up using Open Volunteer Platform, I'd genuinely love to see what you 
 ## Access model (v2)
 
 - `/` is the gateway: volunteers paste the link they got on WhatsApp, admins sign in with email and password.
-- Every event has a private invite code. Volunteers reach it at `/join/<code>`; there is no public event list.
-- Admins share an event from the dashboard or events list with **Share on WhatsApp** or **Copy link**.
+- Every event has a private invite code. Volunteers reach it at `/join/<code>`; there is no public event list. Volunteers give only their name and phone number.
+- **Super admin** sees every event, creates and deactivates event admins, and can delete any event or volunteer.
+- **Event admins** create events and see, share, edit and delete only the events they created or were assigned to.
+- Admins share an event with **Share on WhatsApp** or **Copy link**. Set `NEXT_PUBLIC_SITE_URL` to your public address so the links work for other people.
 - Admin sessions are signed (HMAC) cookies. Set `SESSION_SECRET` (see `.env.example`).
-- After pulling this change run `npx prisma migrate deploy` to add `Event.inviteCode` and backfill existing events.
+- Setup: `npx prisma migrate deploy`, then create your super admin with
+  `npx tsx scripts/create-admin.ts you@example.com "your password" "Your Name"`.

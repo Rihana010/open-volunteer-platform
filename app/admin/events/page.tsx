@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { requireAdmin } from "@/lib/currentAdmin";
+import { eventScope } from "@/lib/adminAccess";
+import { DeleteEventButton } from "@/components/DeleteEventButton";
 import { ShareEventButton } from "@/components/ShareEventButton";
 import { EventArchiveButton } from "@/components/EventArchiveButton";
 
@@ -22,6 +25,8 @@ export default async function AdminEventsPage({
   searchParams: Promise<{ new?: string }>;
 }) {
   const { new: newId } = await searchParams;
+  const admin = await requireAdmin();
+  const scope = eventScope(admin);
   const today = new Date();
 
 const startOfCurrentMonth = new Date(
@@ -55,6 +60,7 @@ await prisma.event.updateMany({
 const archivedEventCount = await prisma.event.count({
   where: {
     isActive: false,
+    ...scope,
   },
 });
 
@@ -66,6 +72,7 @@ const archivedEventDisplay =
   const events = await prisma.event.findMany({
     where: {
       isActive: true,
+      ...scope,
     },
     orderBy: {
       date: "asc",
@@ -181,6 +188,11 @@ const archivedEventDisplay =
                       Signups
                     </Link>
                     <EventArchiveButton eventId={event.id} isActive={event.isActive} />
+                    <DeleteEventButton
+                      eventId={event.id}
+                      title={event.title}
+                      signupCount={event.signups.length}
+                    />
                   </div>
                 </td>
               </tr>

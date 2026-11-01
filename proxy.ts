@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isAllowedAdminEmail } from "@/lib/adminAuth";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
 export async function proxy(request: NextRequest) {
@@ -16,9 +15,7 @@ export async function proxy(request: NextRequest) {
   const email = await verifySessionToken(
     request.cookies.get(SESSION_COOKIE)?.value
   );
-  const isAuthorized = email ? isAllowedAdminEmail(email) : false;
-
-  if (isAuthorized) {
+  if (email) {
     return NextResponse.next();
   }
 

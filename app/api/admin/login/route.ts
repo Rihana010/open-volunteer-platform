@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { isAllowedAdminEmail } from "@/lib/adminAuth";
 import {
   SESSION_COOKIE,
   SESSION_MAX_AGE_SECONDS,
@@ -30,7 +29,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const adminUser = isAllowedAdminEmail(email)
+  const adminUser = email
     ? await prisma.adminUser.findUnique({ where: { email } })
     : null;
 

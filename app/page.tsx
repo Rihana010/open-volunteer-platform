@@ -1,7 +1,8 @@
 import { cookies } from "next/headers";
 import { Wordmark } from "@/components/Wordmark";
 import { Gateway } from "@/components/Gateway";
-import { getSessionEmailFromToken, SESSION_COOKIE } from "@/lib/session";
+import { getSessionEmailFromToken } from "@/lib/adminAccess";
+import { SESSION_COOKIE } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 

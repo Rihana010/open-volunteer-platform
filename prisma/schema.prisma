@@ -43,7 +43,8 @@ model VolunteerSignup {
   id                 Int      @id @default(autoincrement())
   fullName           String
   email              String?
-  locationOrDepartment String
+  phone              String?
+  locationOrDepartment String?
   status             String   @default("confirmed")
   selectedDates      String[]
   createdAt          DateTime @default(now())

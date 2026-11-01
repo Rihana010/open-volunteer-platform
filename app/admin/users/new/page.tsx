@@ -173,7 +173,7 @@ export default function NewAdminUserPage() {
                 })
               }
               className="input"
-              placeholder="name@weke.com"
+              placeholder="name@example.com"
               required
             />
           </label>
