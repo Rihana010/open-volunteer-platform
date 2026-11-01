@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 
 export default function NewEventPage() {
   const router = useRouter();
@@ -51,27 +50,16 @@ export default function NewEventPage() {
       return;
     }
 
-    router.push("/admin/events");
+    const created = await response.json();
+
+    router.push(`/admin/events?new=${created.id}`);
     router.refresh();
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="mb-4">
-            <Image
-              src="/weke-logo.png"
-              alt="Weke Logo"
-              width={180}
-              height={60}
-              priority
-            />
-          </div>
-
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--ovp-blue)]">
-            Admin Portal
-          </p>
 
           <h1 className="text-3xl font-bold text-slate-950">
             Create New Event
@@ -96,7 +84,7 @@ export default function NewEventPage() {
                 onChange={(event) =>
                   setFormData({ ...formData, title: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -111,7 +99,7 @@ export default function NewEventPage() {
                 onChange={(event) =>
                   setFormData({ ...formData, date: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -130,7 +118,7 @@ export default function NewEventPage() {
                     endDate: event.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
               />
             </label>
 
@@ -145,7 +133,7 @@ export default function NewEventPage() {
     onChange={(event) =>
       setFormData({ ...formData, startTime: event.target.value })
     }
-    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+    className="input"
     required
   >
     <option value="">Select start time</option>
@@ -168,7 +156,7 @@ export default function NewEventPage() {
     onChange={(event) =>
       setFormData({ ...formData, endTime: event.target.value })
     }
-    className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+    className="input"
     required
   >
     <option value="">Select end time</option>
@@ -191,7 +179,7 @@ export default function NewEventPage() {
                 onChange={(event) =>
                   setFormData({ ...formData, location: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -209,7 +197,7 @@ export default function NewEventPage() {
                   })
                 }
                 rows={5}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -228,7 +216,7 @@ export default function NewEventPage() {
                     volunteerCapacity: event.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -244,7 +232,7 @@ export default function NewEventPage() {
             <button
               type="button"
               onClick={() => router.push("/admin/events")}
-              className="rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-200"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
@@ -252,7 +240,7 @@ export default function NewEventPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[var(--ovp-blue)] px-4 py-3 font-semibold text-white hover:bg-[var(--ovp-blue-dark)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn btn-ink"
             >
               {isSubmitting ? "Creating..." : "Create Event"}
             </button>

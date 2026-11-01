@@ -1,3 +1,5 @@
+import { generateInviteCode } from "@/lib/invite";
+import { getSessionEmail } from "@/lib/session";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
@@ -29,12 +31,7 @@ export async function POST(request: Request) {
       );
     }
 
-const adminEmail = request.headers
-  .get("cookie")
-  ?.split(";")
-  .map((cookie) => cookie.trim())
-  .find((cookie) => cookie.startsWith("weke_admin_email="))
-  ?.split("=")[1];
+const adminEmail = await getSessionEmail(request);
 
 if (!adminEmail) {
   return NextResponse.json(
@@ -68,6 +65,7 @@ if (!adminUser) {
         volunteerCapacity,
         isActive: true,
         createdByAdminId: adminUser.id,
+        inviteCode: generateInviteCode(),
       },
     });
 

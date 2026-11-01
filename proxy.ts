@@ -1,51 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isAllowedAdminEmail } from "@/lib/adminAuth";
+import { SESSION_COOKIE, verifySessionToken } from "@/lib/session";
 
-function getAllowedAdminEmails() {
-  return (process.env.ADMIN_EMAILS || "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function isAllowedAdminEmail(email: string) {
-  const normalizedEmail = email.trim().toLowerCase();
-
-  return (
-    normalizedEmail.endsWith("@weke.com") &&
-    getAllowedAdminEmails().includes(normalizedEmail)
-  );
-}
-
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const adminEmail = request.cookies.get("weke_admin_email")?.value;
-  const isAuthorized = adminEmail ? isAllowedAdminEmail(adminEmail) : false;
-
-  const isAdminPage = pathname.startsWith("/admin");
   const isAdminApi = pathname.startsWith("/api/admin");
-
-  const isLoginPage = pathname === "/admin/login";
   const isLoginApi = pathname === "/api/admin/login";
   const isLogoutApi = pathname === "/api/admin/logout";
 
-  if (isLoginPage || isLoginApi || isLogoutApi) {
+  if (isLoginApi || isLogoutApi) {
     return NextResponse.next();
   }
 
-  if ((isAdminPage || isAdminApi) && !isAuthorized) {
-    if (isAdminApi) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+  const email = await verifySessionToken(
+    request.cookies.get(SESSION_COOKIE)?.value
+  );
+  const isAuthorized = email ? isAllowedAdminEmail(email) : false;
 
-    const loginUrl = new URL("/admin/login", request.url);
-    return NextResponse.redirect(loginUrl);
+  if (isAuthorized) {
+    return NextResponse.next();
   }
 
-  return NextResponse.next();
+  if (isAdminApi) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // The old /admin/login page is gone; the gateway at "/" handles sign-in.
+  return NextResponse.redirect(new URL("/?as=admin", request.url));
 }
 
 export const config = {

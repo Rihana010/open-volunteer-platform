@@ -171,3 +171,13 @@ You're free to use it, modify it, and build on it.
 I'm **Matthew Ikechukwu Eleweke**, a product designer and full-stack developer who enjoys building practical tools that solve real problems.
 
 If you end up using Open Volunteer Platform, I'd genuinely love to see what you build with it.
+
+---
+
+## Access model (v2)
+
+- `/` is the gateway: volunteers paste the link they got on WhatsApp, admins sign in with email and password.
+- Every event has a private invite code. Volunteers reach it at `/join/<code>`; there is no public event list.
+- Admins share an event from the dashboard or events list with **Share on WhatsApp** or **Copy link**.
+- Admin sessions are signed (HMAC) cookies. Set `SESSION_SECRET` (see `.env.example`).
+- After pulling this change run `npx prisma migrate deploy` to add `Event.inviteCode` and backfill existing events.

@@ -6,7 +6,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const eventId = Number(body.eventId);
+    const inviteCode = String(body.inviteCode || "").trim();
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
     const locationOrDepartment = String(
@@ -17,11 +17,11 @@ export async function POST(request: Request) {
       ? body.selectedDates.map(String)
       : [];
 
-    if (!eventId || !fullName || !email || !locationOrDepartment) {
+    if (!inviteCode || !fullName || !email || !locationOrDepartment) {
       return NextResponse.json(
         {
           error:
-            "Please enter your name, company email, and location or department.",
+            "Enter your name, company email, and location or department.",
         },
         { status: 400 }
       );
@@ -41,7 +41,36 @@ export async function POST(request: Request) {
       );
     }
 
-    const signup = await prisma.$transaction(async (tx) => {
+    const eventRecord = await prisma.event.findUnique({
+      where: { inviteCode },
+      select: { id: true, date: true, endDate: true },
+    });
+
+    if (!eventRecord) {
+      throw new Error("EVENT_NOT_AVAILABLE");
+    }
+
+    const eventId = eventRecord.id;
+
+    // Only accept days that actually belong to this event.
+    const allowedDates = new Set<string>();
+    const lastDay = (eventRecord.endDate ?? eventRecord.date).toISOString().slice(0, 10);
+    for (
+      let day = new Date(eventRecord.date.toISOString().slice(0, 10) + "T12:00:00Z");
+      day.toISOString().slice(0, 10) <= lastDay && allowedDates.size < 366;
+      day.setUTCDate(day.getUTCDate() + 1)
+    ) {
+      allowedDates.add(day.toISOString().slice(0, 10));
+    }
+
+    if (!selectedDates.every((date: string) => allowedDates.has(date))) {
+      return NextResponse.json(
+        { error: "One of the selected days is not part of this event." },
+        { status: 400 }
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
       // Lock this event row so concurrent registrations for the same
       // event cannot pass the capacity check simultaneously.
       const lockedEvents = await tx.$queryRaw<
@@ -127,7 +156,7 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json(signup, { status: 201 });
+    return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error) {
     if (error instanceof Error) {
       switch (error.message) {

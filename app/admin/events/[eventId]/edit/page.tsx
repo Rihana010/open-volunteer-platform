@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 
 const timeOptions = Array.from({ length: 48 }, (_, index) => {
   const totalMinutes = index * 30;
@@ -126,7 +125,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900">
+      <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900">
         <div className="mx-auto max-w-3xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           Loading event...
         </div>
@@ -135,22 +134,9 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="mb-4">
-            <Image
-              src="/weke-logo.png"
-              alt="Weke Logo"
-              width={180}
-              height={60}
-              priority
-            />
-          </div>
-
-          <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--ovp-blue)]">
-            Admin Portal
-          </p>
 
           <h1 className="text-3xl font-bold text-slate-950">Edit Event</h1>
 
@@ -173,7 +159,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                 onChange={(event) =>
                   setFormData({ ...formData, title: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -188,7 +174,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                 onChange={(event) =>
                   setFormData({ ...formData, date: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -207,7 +193,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                     endDate: event.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
               />
             </label>
 
@@ -222,7 +208,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                   onChange={(event) =>
                     setFormData({ ...formData, startTime: event.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="input"
                   required
                 >
                   <option value="">Select start time</option>
@@ -244,7 +230,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                   onChange={(event) =>
                     setFormData({ ...formData, endTime: event.target.value })
                   }
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  className="input"
                   required
                 >
                   <option value="">Select end time</option>
@@ -266,7 +252,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                 onChange={(event) =>
                   setFormData({ ...formData, location: event.target.value })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -284,7 +270,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                   })
                 }
                 rows={5}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -303,7 +289,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
                     volunteerCapacity: event.target.value,
                   })
                 }
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                className="input"
                 required
               />
             </label>
@@ -357,7 +343,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
             <button
               type="button"
               onClick={() => router.push("/admin/events")}
-              className="rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-700 hover:bg-slate-200"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
@@ -365,7 +351,7 @@ const [assignedAdminIds, setAssignedAdminIds] = useState<number[]>([]);
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-[var(--ovp-blue)] px-4 py-3 font-semibold text-white hover:bg-[var(--ovp-blue-dark)] disabled:cursor-not-allowed disabled:opacity-60"
+              className="btn btn-ink"
             >
               {isSubmitting ? "Saving..." : "Save Changes"}
             </button>

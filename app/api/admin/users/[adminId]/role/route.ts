@@ -1,3 +1,4 @@
+import { getSessionEmail } from "@/lib/session";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 
@@ -8,12 +9,7 @@ type RouteContext = {
 };
 
 async function getCurrentAdmin(request: Request) {
-  const adminEmail = request.headers
-    .get("cookie")
-    ?.split(";")
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith("weke_admin_email="))
-    ?.split("=")[1];
+  const adminEmail = await getSessionEmail(request);
 
   if (!adminEmail) {
     return null;

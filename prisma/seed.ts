@@ -1,3 +1,4 @@
+import { generateInviteCode } from "../lib/invite";
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -22,6 +23,7 @@ async function main() {
         description:
           "Help members safely dispose of sensitive documents during our community shred event.",
         volunteerCapacity: 6,
+        inviteCode: generateInviteCode(),
       },
       {
         title: "Financial Literacy Workshop",
@@ -32,6 +34,7 @@ async function main() {
         description:
           "Volunteer to support setup, check-in, and guest assistance for a financial education workshop.",
         volunteerCapacity: 4,
+        inviteCode: generateInviteCode(),
       },
       {
         title: "Charity Walk",
@@ -42,6 +45,7 @@ async function main() {
         description:
           "Support the team, distribute water, and help guide participants.",
         volunteerCapacity: 10,
+        inviteCode: generateInviteCode(),
       },
       {
         title: "Backpack Drive Sorting Day",
@@ -52,6 +56,7 @@ async function main() {
         description:
           "Help sort, count, and prepare backpack drive donations before distribution.",
         volunteerCapacity: 8,
+        inviteCode: generateInviteCode(),
       },
     ],
   });

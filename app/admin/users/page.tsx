@@ -1,7 +1,6 @@
+import { getSessionEmailFromToken, SESSION_COOKIE } from "@/lib/session";
 import Link from "next/link";
-import Image from "next/image";
 import { prisma } from "@/lib/db";
-import { AdminLogoutButton } from "@/components/AdminLogoutButton";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { AdminRoleSelector } from "@/components/AdminRoleSelector";
@@ -17,10 +16,10 @@ function formatRole(role: string) {
 
 export default async function AdminUsersPage() {
     const cookieStore = await cookies();
-    const adminEmail = cookieStore.get("weke_admin_email")?.value;
+    const adminEmail = await getSessionEmailFromToken(cookieStore.get(SESSION_COOKIE)?.value);
 
     if (!adminEmail) {
-    redirect("/admin/login");
+    redirect("/?as=admin");
     }
 
     const currentAdmin = await prisma.adminUser.findUnique({
@@ -39,31 +38,17 @@ export default async function AdminUsersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <Link
                 href="/admin"
-                className="mb-4 inline-flex rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+                className="btn btn-ghost"
               >
                 ← Back to Dashboard
               </Link>
-
-              <div className="mb-4">
-                <Image
-                  src="/weke-logo.png"
-                  alt="Weke Logo"
-                  width={180}
-                  height={60}
-                  priority
-                />
-              </div>
-
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--ovp-blue)]">
-                Admin Portal
-              </p>
 
               <h1 className="text-3xl font-bold text-slate-950">
                 Admin Users
@@ -75,7 +60,6 @@ export default async function AdminUsersPage() {
             </div>
 
             <div className="flex flex-col gap-3">
-                <AdminLogoutButton />
 
                 <Link
                     href="/admin/users/new"

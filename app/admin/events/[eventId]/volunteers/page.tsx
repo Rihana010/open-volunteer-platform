@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import Image from "next/image";
+import { ShareEventButton } from "@/components/ShareEventButton";
 
 type VolunteerPageProps = {
   params: Promise<{
@@ -35,7 +35,7 @@ export default async function EventVolunteersPage({
 
   if (!event) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-8">
+      <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8">
         <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           Event not found.
         </div>
@@ -44,24 +44,11 @@ export default async function EventVolunteersPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <div className="mb-4">
-                <Image
-                  src="/weke-logo.png"
-                  alt="Weke Logo"
-                  width={180}
-                  height={60}
-                  priority
-                />
-              </div>
-
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--ovp-blue)]">
-                Admin Portal
-              </p>
 
               <h1 className="text-3xl font-bold text-slate-950">
                 Volunteer Signups
@@ -77,16 +64,26 @@ export default async function EventVolunteersPage({
             </div>
 
             <div className="flex flex-wrap gap-3">
+                <ShareEventButton
+                  event={{
+                    title: event.title,
+                    date: formatDate(event.date),
+                    startTime: event.startTime,
+                    endTime: event.endTime,
+                    location: event.location,
+                    inviteCode: event.inviteCode,
+                  }}
+                />
                 <a
                     href={`/api/admin/events/${event.id}/volunteers/export`}
-                    className="rounded-xl bg-slate-100 px-4 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-200"
+                    className="btn btn-ghost"
                 >
                     Export CSV
                 </a>
 
                 <Link
                     href="/admin/events"
-                    className="rounded-xl bg-slate-100 px-4 py-3 text-center font-semibold text-slate-700 transition hover:bg-slate-200"
+                    className="btn btn-ghost"
                 >
                     Back to Events
                 </Link>

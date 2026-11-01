@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import "@fontsource-variable/big-shoulders-display";
+import "@fontsource-variable/familjen-grotesk";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LAFCU Events & Volunteer Calendar",
-  description: "LAFCU employee events and volunteer management",
+  title: "Open Volunteer",
+  description: "Sign up to volunteer with an invite link, or sign in to run events.",
 };
 
 export default function RootLayout({
@@ -12,17 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://use.typekit.net/rrq8rkv.css"
-        />
-      </head>
-
-      <body className="min-h-full flex flex-col">
-        {children}
-      </body>
+    <html lang="en" className="h-full">
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

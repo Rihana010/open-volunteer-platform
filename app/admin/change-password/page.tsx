@@ -82,7 +82,7 @@ export default function ChangePasswordPage() {
             type="password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="input"
             required
           />
         </label>
@@ -96,7 +96,7 @@ export default function ChangePasswordPage() {
             type="password"
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="input"
             required
           />
         </label>
@@ -110,7 +110,7 @@ export default function ChangePasswordPage() {
             type="password"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+            className="input"
             required
           />
         </label>
@@ -124,7 +124,7 @@ export default function ChangePasswordPage() {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="mt-5 w-full rounded-xl bg-[var(--ovp-blue)] px-4 py-3 font-semibold text-white transition hover:bg-[var(--ovp-blue-dark)] disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn btn-ink"
         >
           {isSubmitting ? "Saving..." : "Save Password"}
         </button>

@@ -39,7 +39,7 @@ export function ArchivePastEventsButton() {
       type="button"
       onClick={handleArchivePastEvents}
       disabled={isArchiving}
-      className="rounded-xl bg-[var(--ovp-blue)] px-4 py-2 text-center font-semibold text-white transition hover:bg-[var(--ovp-blue-900)] disabled:cursor-not-allowed disabled:opacity-60"
+      className="btn btn-ink"
     >
       {isArchiving ? "Archiving..." : "Archive Past Events"}
     </button>

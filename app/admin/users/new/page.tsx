@@ -57,7 +57,7 @@ export default function NewAdminUserPage() {
 
   if (temporaryPassword) {
     return (
-      <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+      <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
             <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-[var(--ovp-blue)]">
@@ -102,7 +102,7 @@ export default function NewAdminUserPage() {
               <button
                 type="button"
                 onClick={() => router.push("/admin/users")}
-                className="rounded-xl bg-slate-100 px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-200"
+                className="btn btn-ghost"
               >
                 Back to Admin Users
               </button>
@@ -114,11 +114,11 @@ export default function NewAdminUserPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <div className="min-h-[calc(100dvh-4.5rem)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-2xl">
         <Link
           href="/admin/users"
-          className="mb-6 inline-flex rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
+          className="btn btn-ghost"
         >
           ← Back to Admin Users
         </Link>
@@ -153,7 +153,7 @@ export default function NewAdminUserPage() {
                   fullName: event.target.value,
                 })
               }
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-[var(--ovp-blue)] focus:ring-4 focus:ring-blue-100"
+              className="input"
               required
             />
           </label>
@@ -172,7 +172,7 @@ export default function NewAdminUserPage() {
                   email: event.target.value,
                 })
               }
-              className="w-full rounded-xl border border-slate-300 px-3 py-2 outline-none transition focus:border-[var(--ovp-blue)] focus:ring-4 focus:ring-blue-100"
+              className="input"
               placeholder="name@weke.com"
               required
             />

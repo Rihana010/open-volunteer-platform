@@ -1,3 +1,5 @@
+import { randomInt } from "crypto";
+import { getSessionEmail } from "@/lib/session";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
@@ -8,19 +10,14 @@ function generateTemporaryPassword() {
   let password = "";
 
   for (let index = 0; index < 12; index++) {
-    password += characters[Math.floor(Math.random() * characters.length)];
+    password += characters[randomInt(characters.length)];
   }
 
   return password;
 }
 
 async function getCurrentAdmin(request: Request) {
-  const adminEmail = request.headers
-    .get("cookie")
-    ?.split(";")
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith("weke_admin_email="))
-    ?.split("=")[1];
+  const adminEmail = await getSessionEmail(request);
 
   if (!adminEmail) {
     return null;

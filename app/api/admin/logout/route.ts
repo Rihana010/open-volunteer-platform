@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
+import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 
 export async function POST(request: Request) {
-  const response = NextResponse.redirect(new URL("/", request.url));
+  const response = NextResponse.redirect(new URL("/", request.url), 303);
 
-  response.cookies.set("weke_admin_email", "", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
+  response.cookies.set(SESSION_COOKIE, "", {
+    ...sessionCookieOptions,
     maxAge: 0,
   });
 

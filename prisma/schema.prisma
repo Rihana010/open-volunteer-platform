@@ -17,6 +17,7 @@ model Event {
   description       String
   volunteerCapacity Int
   isActive Boolean @default(true)
+  inviteCode        String   @unique
   createdAt         DateTime @default(now())
 
 createdByAdminId Int?
